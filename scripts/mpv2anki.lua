@@ -49,16 +49,15 @@ local function dlog(...)
 end
 
 local function get_name(s, e)
-  return mp.get_property("filename"):gsub('%W','').. tostring(s) .. tostring(e)
+  return mp.get_property("filename"):gsub('%W','').. tostring(s) .. tostring(e) .. "." .. os.date("%d-%m-%Y_%H-%M-%S")
 end
 
-local function create_audio(s, e)
+local function create_audio(s, e, name)
 
   if s == nil or e == nil then
     return
   end
 
-  local name = get_name(s, e)
   local destination = utils.join_path(prefix, name .. '.' .. options.audio_format)
   s = s - options.audio_clip_padding
   local t = e - s + options.audio_clip_padding
@@ -97,8 +96,8 @@ local function create_audio(s, e)
   dlog(utils.to_string(cmd))
 end
 
-local function create_screenshot(s, e)
-  local img = utils.join_path(prefix, get_name(s,e) .. '.' .. options.image_format)
+local function create_screenshot(s, e, name)
+  local img = utils.join_path(prefix, name .. '.' .. options.image_format)
   mp.commandv('screenshot-to-file', img, 'video') 
 end
 
@@ -150,8 +149,9 @@ local function get_extract()
 
   if lines == nil or lines == "" then
     local time_pos = math.min(mp.get_property_number("time-pos"))
-    create_screenshot(time_pos, time_pos)
-    local ifield = '<img src='.. get_name(time_pos,time_pos) ..'.' .. options.image_format .. '>'
+    local name = get_name(time_pos, time_pos)
+    create_screenshot(time_pos, time_pos, name)
+    local ifield = '<img src='.. name ..'.' .. options.image_format .. '>'
     add_to_last_added(ifield, "", "")
     return
   end 
@@ -166,10 +166,11 @@ local function get_extract()
   end
 
   if e ~= 0 then
-    create_screenshot(s, e)
-    create_audio(s, e)
-    local ifield = '<img src='.. get_name(s,e) ..'.' .. options.image_format .. '>'
-    local afield = "[sound:".. get_name(s,e) .. '.' .. options.audio_format .. "]"
+    local name = get_name(s, e)
+    create_screenshot(s, e, name)
+    create_audio(s, e, name)
+    local ifield = '<img src='.. name ..'.' .. options.image_format .. '>'
+    local afield = "[sound:".. name .. '.' .. options.audio_format .. "]"
     local tfield = lines:gsub("\n", "<br />")
     add_to_last_added(ifield, afield, tfield)
   end
@@ -182,10 +183,11 @@ local function get_multiple_extract(tfield, s, e)
   prefix = anki_connect('getMediaDirPath')["result"]
   dlog(prefix)
 
-  create_screenshot(s, e)
-  create_audio(s, e)
-  local ifield = '<img src='.. get_name(s,e) ..'.' .. options.image_format .. '>'
-  local afield = "[sound:".. get_name(s,e) .. '.' .. options.audio_format .. "]"
+  local name = get_name(s, e)
+  create_screenshot(s, e, name)
+  create_audio(s, e, name)
+  local ifield = '<img src='.. name ..'.' .. options.image_format .. '>'
+  local afield = "[sound:".. name .. '.' .. options.audio_format .. "]"
   local tfield = tfield
   add_to_last_added(ifield, afield, tfield)
 end
