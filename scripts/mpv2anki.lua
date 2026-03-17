@@ -53,7 +53,6 @@ local function get_name(s, e)
 end
 
 local function create_audio(s, e, name)
-
   if s == nil or e == nil then
     return
   end
